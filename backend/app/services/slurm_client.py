@@ -310,7 +310,7 @@ class SlurmClient:
             if any(n in str(j.get("nodes", "")) for n in target_nodes)
         ]
 
-        result = []
+        seen: Dict[int, Dict] = {}
         for j in filtered:
             t = j.get("time", {})
             tres = j.get("tres", {})
@@ -319,10 +319,11 @@ class SlurmClient:
             gpus = next((x["count"] for x in allocated if x.get("type") == "gres" and x.get("name") == "gpu"), None)
 
             state_list = j.get("state", {}).get("current", [])
-            state = state_list[0] if state_list else "UNKNOWN"
+            state = (state_list[-1] if state_list else "UNKNOWN").upper()
 
-            result.append({
-                "job_id":    j.get("job_id"),
+            job_id = j.get("job_id")
+            record = {
+                "job_id":    job_id,
                 "name":      j.get("name"),
                 "user":      j.get("user"),
                 "nodes":     j.get("nodes"),
@@ -334,9 +335,12 @@ class SlurmClient:
                 "start_time":  t.get("start"),
                 "end_time":    t.get("end"),
                 "elapsed":     t.get("elapsed"),
-            })
+            }
+            # Deduplicate: keep the entry with the latest end_time (most complete record)
+            if job_id not in seen or (t.get("end") or 0) >= (seen[job_id].get("end_time") or 0):
+                seen[job_id] = record
 
-        return {"jobs": result, "errors": data.get("errors", [])}
+        return {"jobs": list(seen.values()), "errors": data.get("errors", [])}
 
 
 # Global Slurm client instance

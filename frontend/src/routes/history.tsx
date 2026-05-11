@@ -94,16 +94,25 @@ export default function History() {
     ['ALL', ...Array.from(new Set(allJobs.map(j => j.user).filter(Boolean))).sort()],
     [allJobs]
   )
+  const states = useMemo(() =>
+    ['ALL', ...Array.from(new Set(allJobs.map(j => j.state).filter(Boolean))).sort()],
+    [allJobs]
+  )
 
   const filtered = useMemo(() =>
     allJobs.filter(j => {
-      if (stateFilter !== 'ALL' && j.state  !== stateFilter) return false
+      if (stateFilter !== 'ALL' && (j.state ?? '').toUpperCase() !== stateFilter) return false
       if (nameFilter  !== 'ALL' && j.name   !== nameFilter)  return false
       if (userFilter  !== 'ALL' && j.user   !== userFilter)  return false
       return true
     }),
     [allJobs, stateFilter, nameFilter, userFilter]
   )
+
+  const avgElapsed = useMemo(() => {
+    const vals = filtered.map(j => j.elapsed).filter((v): v is number => typeof v === 'number' && v >= 0)
+    return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null
+  }, [filtered])
 
   return (
     <div className="space-y-4">
@@ -113,99 +122,107 @@ export default function History() {
           <h1 className="text-2xl font-bold text-white cursor-help">Job History（歷史工作）</h1>
         </Tooltip>
         <p className="text-sm text-[#8892b0] mt-0.5">
-          aidgxapp01 · aidgxapp02 — 最多查詢 1 個月內資料 · up to 1 month
+          最多查詢 1 個月內資料 · up to 1 month
         </p>
       </div>
 
-      {/* Single filter bar */}
-      <div className="bg-navy-800 rounded-2xl border border-navy-700 p-4 flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">開始 Start</label>
-          <input
-            type="date"
-            value={startDate}
-            min={MIN_DATE}
-            max={endDate}
-            onChange={e => setStartDate(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400"
-          />
+      <div className="flex flex-wrap gap-3">
+        {/* Search block */}
+        <div className="bg-navy-800 rounded-2xl border border-navy-700 px-4 pt-3 pb-3 flex flex-col gap-3 min-w-fit">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#8892b0]">Search</span>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">開始 Start</label>
+              <input
+                type="date"
+                value={startDate}
+                min={MIN_DATE}
+                max={endDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">結束 End</label>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate}
+                max={DEFAULT_END}
+                onChange={e => setEndDate(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">節點 Node</label>
+              <select
+                value={nodeFilter}
+                onChange={e => setNodeFilter(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
+              >
+                <option value="ALL">All Nodes</option>
+                <option value="aidgxapp01">aidgxapp01</option>
+                <option value="aidgxapp02">aidgxapp02</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0] invisible">.</label>
+              <button
+                onClick={search_}
+                disabled={loading}
+                className="px-5 py-1.5 rounded-xl text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-navy-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? '查詢中…' : 'Search'}
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">結束 End</label>
-          <input
-            type="date"
-            value={endDate}
-            min={startDate}
-            max={DEFAULT_END}
-            onChange={e => setEndDate(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">節點 Node</label>
-          <select
-            value={nodeFilter}
-            onChange={e => setNodeFilter(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
-          >
-            <option value="ALL">All Nodes</option>
-            <option value="aidgxapp01">aidgxapp01</option>
-            <option value="aidgxapp02">aidgxapp02</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">狀態 State</label>
-          <select
-            value={stateFilter}
-            onChange={e => setStateFilter(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
-          >
-            <option value="ALL">All States</option>
-            <option value="COMPLETED">COMPLETED</option>
-            <option value="RUNNING">RUNNING</option>
-            <option value="FAILED">FAILED</option>
-            <option value="CANCELLED">CANCELLED</option>
-            <option value="TIMEOUT">TIMEOUT</option>
-            <option value="NODE_FAIL">NODE_FAIL</option>
-            <option value="PREEMPTED">PREEMPTED</option>
-            <option value="OUT_OF_MEMORY">OUT_OF_MEMORY</option>
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">名稱 Name</label>
-          <select
-            value={nameFilter}
-            onChange={e => setNameFilter(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer max-w-[180px]"
-          >
-            {names.map(n => <option key={n} value={n}>{n === 'ALL' ? 'All Names' : n}</option>)}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0]">使用者 User</label>
-          <select
-            value={userFilter}
-            onChange={e => setUserFilter(e.target.value)}
-            className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
-          >
-            {users.map(u => <option key={u} value={u}>{u === 'ALL' ? 'All Users' : u}</option>)}
-          </select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#8892b0] invisible">.</label>
-          <button
-            onClick={search_}
-            disabled={loading}
-            className="px-5 py-1.5 rounded-xl text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-navy-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? '查詢中…' : 'Search'}
-          </button>
+
+        {/* Filter block */}
+        <div className="bg-navy-800 rounded-2xl border border-navy-700 px-4 pt-3 pb-3 flex flex-col gap-3 min-w-fit">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[#8892b0]">Filter</span>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">狀態 State</label>
+              <select
+                value={stateFilter}
+                onChange={e => setStateFilter(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
+              >
+                {states.map(s => <option key={s} value={s}>{s === 'ALL' ? 'All States' : s}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">名稱 Name</label>
+              <select
+                value={nameFilter}
+                onChange={e => setNameFilter(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer max-w-[200px]"
+              >
+                {names.map(n => <option key={n} value={n}>{n === 'ALL' ? 'All Names' : n}</option>)}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-[#8892b0]">使用者 User</label>
+              <select
+                value={userFilter}
+                onChange={e => setUserFilter(e.target.value)}
+                className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
+              >
+                {users.map(u => <option key={u} value={u}>{u === 'ALL' ? 'All Users' : u}</option>)}
+              </select>
+            </div>
+            {queried && (
+              <div className="flex flex-col self-end pb-1.5 gap-0.5">
+                <span className="text-sm text-[#8892b0]">{filtered.length} / {allJobs.length} 筆</span>
+                {avgElapsed !== null && (
+                  <span className="text-xs text-[#fc8181]">平均時長 {dur(avgElapsed)}</span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {queried && !loading && (
-        <p className="text-sm text-[#8892b0]">{filtered.length} / {allJobs.length} 筆</p>
-      )}
 
       {/* Results */}
       {loading ? (
@@ -238,7 +255,7 @@ export default function History() {
             <tbody>
               {filtered.map((job, i) => (
                 <tr
-                  key={job.job_id ?? i}
+                  key={i}
                   className="border-b border-navy-700/50 hover:bg-navy-700/30 transition-colors"
                 >
                   <td className="px-4 py-3 font-mono text-teal-400 font-bold">#{job.job_id}</td>
