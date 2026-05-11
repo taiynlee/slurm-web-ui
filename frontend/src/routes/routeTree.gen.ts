@@ -6,6 +6,7 @@ import Nodes from './nodes'
 import Jobs from './jobs'
 import Partitions from './partitions'
 import JobDetail from './_authenticated/jobs.$jobId'
+import History from './history'
 
 const rootRoute = createRootRoute({ component: Root })
 
@@ -46,6 +47,12 @@ const jobDetailRoute = createRoute({
   component: JobDetail,
 })
 
+const historyRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/history',
+  component: History,
+})
+
 export const routeTree = rootRoute.addChildren([
   layoutRoute.addChildren([
     indexRoute,
@@ -53,6 +60,7 @@ export const routeTree = rootRoute.addChildren([
     partitionsRoute,
     jobsRoute,
     jobDetailRoute,
+    historyRoute,
   ]),
 ])
 

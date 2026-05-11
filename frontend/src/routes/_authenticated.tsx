@@ -16,6 +16,7 @@ export default function Layout() {
                 { to: '/nodes',      label: 'Nodes'      },
                 { to: '/partitions', label: 'Partitions' },
                 { to: '/jobs',       label: 'Jobs'       },
+                { to: '/history',    label: 'History'    },
               ] as const
             ).map(({ to, label }) => (
               <Link

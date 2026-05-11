@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Query, status
 from app.schemas.cluster import ClusterInfoResponse, JobDetail
 from app.services.slurm_client import slurm_client
 
@@ -32,6 +33,16 @@ async def get_jobs():
 @router.get('/stats')
 async def get_stats():
     return await slurm_client.get_diag()
+
+
+@router.get('/history')
+async def get_job_history(
+    start_ts: Optional[int] = Query(None, description="Start Unix timestamp"),
+    end_ts:   Optional[int] = Query(None, description="End Unix timestamp"),
+    nodes:    Optional[str] = Query(None, description="Comma-separated node names"),
+):
+    node_list = [n.strip() for n in nodes.split(",")] if nodes else None
+    return await slurm_client.get_job_history(start_ts, end_ts, node_list)
 
 
 @router.get('/jobs/{job_id}', response_model=JobDetail)

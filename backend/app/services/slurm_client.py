@@ -277,5 +277,67 @@ class SlurmClient:
         return None
 
 
+    async def get_job_history(
+        self,
+        start_ts: Optional[int] = None,
+        end_ts: Optional[int] = None,
+        nodes: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Query historical jobs from slurmdbd, filtered by time range and nodes."""
+        params: Dict[str, Any] = {}
+        if start_ts:
+            params["start_time"] = start_ts
+        if end_ts:
+            params["end_time"] = end_ts
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    f"{self.base_url}/slurmdb/{settings.SLURMRESTD_VERSION}/jobs",
+                    headers=self._get_headers(),
+                    params=params,
+                    timeout=30.0,
+                )
+                data = response.json()
+            except Exception as e:
+                return {"error": str(e), "jobs": []}
+
+        jobs = data.get("jobs", [])
+
+        target_nodes = set(nodes) if nodes else {"aidgxapp01", "aidgxapp02"}
+        filtered = [
+            j for j in jobs
+            if any(n in str(j.get("nodes", "")) for n in target_nodes)
+        ]
+
+        result = []
+        for j in filtered:
+            t = j.get("time", {})
+            tres = j.get("tres", {})
+            allocated = tres.get("allocated", [])
+            cpus = next((x["count"] for x in allocated if x.get("type") == "cpu"), None)
+            gpus = next((x["count"] for x in allocated if x.get("type") == "gres" and x.get("name") == "gpu"), None)
+
+            state_list = j.get("state", {}).get("current", [])
+            state = state_list[0] if state_list else "UNKNOWN"
+
+            result.append({
+                "job_id":    j.get("job_id"),
+                "name":      j.get("name"),
+                "user":      j.get("user"),
+                "nodes":     j.get("nodes"),
+                "partition": j.get("partition"),
+                "state":     state,
+                "cpus":      cpus,
+                "gpus":      gpus,
+                "submit_time": t.get("submission"),
+                "start_time":  t.get("start"),
+                "end_time":    t.get("end"),
+                "elapsed":     t.get("elapsed"),
+            })
+
+        return {"jobs": result, "errors": data.get("errors", [])}
+
+
 # Global Slurm client instance
 slurm_client = SlurmClient()
