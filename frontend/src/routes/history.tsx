@@ -28,7 +28,7 @@ function StateBadge({ state }: { state: string }) {
 
 const THREE_MONTHS_AGO = (() => {
   const d = new Date()
-  d.setMonth(d.getMonth() - 3)
+  d.setMonth(d.getMonth() - 1)
   return d
 })()
 
@@ -113,7 +113,7 @@ export default function History() {
           <h1 className="text-2xl font-bold text-white cursor-help">Job History（歷史工作）</h1>
         </Tooltip>
         <p className="text-sm text-[#8892b0] mt-0.5">
-          aidgxapp01 · aidgxapp02 — 最多查詢 3 個月內資料 · up to 3 months
+          aidgxapp01 · aidgxapp02 — 最多查詢 1 個月內資料 · up to 1 month
         </p>
       </div>
 
