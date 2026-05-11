@@ -1,0 +1,6 @@
+apiVersion: v2
+name: slurm-dashboard
+description: Web UI for Slurm HPC cluster monitoring
+type: application
+version: 0.1.0
+appVersion: "latest"

@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: harbor.wistron.com/k8sprdwhqaiml/slurm/slurm-webui
+  tag: v1.1.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  host: slurm-job-ui.infer-whq.k8s.wistron.com
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+

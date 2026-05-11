@@ -1,0 +1,24 @@
+# Environment / secrets
+.env
+*.env
+k8s/secret.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.db
+*.db-journal
+alembic/versions/
+
+# Node
+node_modules/
+dist/
+.cache/
+
+# Claude Code
+.claude/
+
+# Misc
+*.log
+.DS_Store

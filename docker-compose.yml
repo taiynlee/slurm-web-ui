@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  slurm-webui:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./slurm_webui.db
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - SLURM_HOST=${SLURM_HOST:-http://localhost:6820}
+      - SLURM_USER_NAME=${SLURM_USER_NAME:-XXXX}
+      - SLURM_USER_TOKEN=${SLURM_USER_TOKEN}
+      - SLURMRESTD_VERSION=${SLURMRESTD_VERSION:-v0.0.42}
+      - OAUTH2_ENABLED=${OAUTH2_ENABLED:-false}
+      - OAUTH2_CLIENT_ID=${OAUTH2_CLIENT_ID}
+      - OAUTH2_CLIENT_SECRET=${OAUTH2_CLIENT_SECRET}
+      - OAUTH2_SERVER_URL=${OAUTH2_SERVER_URL}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      - ./backend/slurm_webui.db:/app/slurm_webui.db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Optional PostgreSQL database (uncomment to use instead of SQLite)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: slurm_webui
+  #     POSTGRES_USER: slurm_user
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U slurm_user -d slurm_webui"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+# volumes:
+#   postgres_data:
