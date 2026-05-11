@@ -61,6 +61,14 @@ export default function History() {
   const [error,   setError]   = useState<string | null>(null)
   const [queried, setQueried] = useState(false)
 
+  const [sortCol, setSortCol] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (col: string) => {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('asc') }
+  }
+
   const search_ = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -113,6 +121,18 @@ export default function History() {
     const vals = filtered.map(j => j.elapsed).filter((v): v is number => typeof v === 'number' && v >= 0)
     return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null
   }, [filtered])
+
+  const sorted = useMemo(() => {
+    if (!sortCol) return filtered
+    return [...filtered].sort((a, b) => {
+      const av = a[sortCol] ?? ''
+      const bv = b[sortCol] ?? ''
+      const cmp = typeof av === 'number' && typeof bv === 'number'
+        ? av - bv
+        : String(av).localeCompare(String(bv))
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [filtered, sortCol, sortDir])
 
   return (
     <div className="space-y-4">
@@ -240,20 +260,31 @@ export default function History() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-navy-700 text-[#8892b0] text-xs uppercase tracking-wider">
-                <th className="text-left px-4 py-3">Job ID</th>
-                <th className="text-left px-4 py-3">名稱 Name</th>
-                <th className="text-left px-4 py-3">使用者 User</th>
-                <th className="text-left px-4 py-3">節點 Node</th>
-                <th className="text-left px-4 py-3">狀態 State</th>
-                <th className="text-right px-4 py-3">CPU</th>
-                <th className="text-right px-4 py-3">GPU</th>
-                <th className="text-left px-4 py-3">開始時間 Start</th>
-                <th className="text-left px-4 py-3">結束時間 End</th>
-                <th className="text-right px-4 py-3">時長 Duration</th>
+                {([
+                  { label: 'Job ID',        col: 'job_id',     align: 'left'  },
+                  { label: '名稱 Name',      col: 'name',       align: 'left'  },
+                  { label: '使用者 User',    col: 'user',       align: 'left'  },
+                  { label: '節點 Node',      col: 'nodes',      align: 'left'  },
+                  { label: '狀態 State',     col: 'state',      align: 'left'  },
+                  { label: 'CPU',            col: 'cpus',       align: 'right' },
+                  { label: 'GPU',            col: 'gpus',       align: 'right' },
+                  { label: '開始時間 Start', col: 'start_time', align: 'left'  },
+                  { label: '結束時間 End',   col: 'end_time',   align: 'left'  },
+                  { label: '時長 Duration',  col: 'elapsed',    align: 'right' },
+                ] as const).map(({ label, col, align }) => (
+                  <th
+                    key={col}
+                    onClick={() => handleSort(col)}
+                    className={`px-4 py-3 cursor-pointer select-none hover:text-white transition-colors text-${align}`}
+                  >
+                    {label}
+                    {sortCol === col ? (sortDir === 'asc' ? ' ▲' : ' ▼') : ' ⇅'}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map((job, i) => (
+              {sorted.map((job, i) => (
                 <tr
                   key={i}
                   className="border-b border-navy-700/50 hover:bg-navy-700/30 transition-colors"
