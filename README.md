@@ -10,6 +10,23 @@ A modern web interface for monitoring Slurm HPC clusters. No login required — 
 - **Jobs** — queue view with wait time, runtime, remaining time; clickable job detail page
 - **1-minute auto-refresh** with no page flash (stale-while-revalidate)
 
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend language | Python |
+| Backend framework | FastAPI |
+| Backend package manager | uv |
+| Config / validation | pydantic-settings |
+| TTL cache | cachetools |
+| Frontend language | TypeScript |
+| Frontend framework | React |
+| Routing | TanStack Router (file-based) |
+| Styling | Tailwind CSS |
+| HTTP client | Axios |
+| Icons | lucide-react |
+| Bundler | Vite |
+
 ## Quick Start
 
 ### Prerequisites
