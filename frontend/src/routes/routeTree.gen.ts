@@ -7,6 +7,7 @@ import Jobs from './jobs'
 import Partitions from './partitions'
 import JobDetail from './_authenticated/jobs.$jobId'
 import History from './history'
+import GpuMonitoring from './gpu'
 
 const rootRoute = createRootRoute({ component: Root })
 
@@ -53,11 +54,18 @@ const historyRoute = createRoute({
   component: History,
 })
 
+const gpuRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/gpu',
+  component: GpuMonitoring,
+})
+
 export const routeTree = rootRoute.addChildren([
   layoutRoute.addChildren([
     indexRoute,
     nodesRoute,
     partitionsRoute,
+    gpuRoute,
     jobsRoute,
     jobDetailRoute,
     historyRoute,

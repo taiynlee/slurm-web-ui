@@ -1,4 +1,6 @@
+import asyncio
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -7,8 +9,16 @@ from fastapi.responses import FileResponse
 from app.api.cluster import router as cluster_router
 from app.core.config import settings
 from app.schemas.problem import ProblemDetail
+from app.services.gpu_collector import collector_loop
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(collector_loop())
+    yield
+    task.cancel()
 
 
 def create_app() -> FastAPI:
@@ -16,6 +26,7 @@ def create_app() -> FastAPI:
         title=settings.APP_NAME,
         description="Web UI for Slurm HPC cluster monitoring",
         version="0.1.0",
+        lifespan=lifespan,
     )
 
     app.add_middleware(

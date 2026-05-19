@@ -18,5 +18,13 @@ class Settings(BaseSettings):
     SLURMRESTD_VERSION:  str = "v0.0.42"
     APP_NAME:            str = "slurm_webui"
 
+    BCM_HOST:            str = "https://10.28.203.31:8081"
+    BCM_CERT_PATH:       str = "certs/bcm_cert.pem"
+    BCM_KEY_PATH:        str = "certs/bcm_key.pem"
+    BCM_CERT_B64:        str = ""   # base64-encoded PEM cert (overrides BCM_CERT_PATH)
+    BCM_KEY_B64:         str = ""   # base64-encoded PEM key  (overrides BCM_KEY_PATH)
+    BCM_GPU_NODES:       str = "aidgxapp01,aidgxapp02"
+    GPU_DB_PATH:         str = "gpu_metrics.db"
+
 
 settings = Settings()

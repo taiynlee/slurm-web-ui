@@ -12,11 +12,12 @@ export default function Layout() {
           <nav className="flex items-center gap-1">
             {(
               [
-                { to: '/',           label: 'Overview'   },
-                { to: '/nodes',      label: 'Nodes'      },
-                { to: '/partitions', label: 'Partitions' },
-                { to: '/jobs',       label: 'Jobs'       },
-                { to: '/history',    label: 'History'    },
+                { to: '/',           label: 'Overview'         },
+                { to: '/nodes',      label: 'Nodes'            },
+                { to: '/partitions', label: 'Partitions'       },
+                { to: '/gpu',        label: 'GPU Utilization'  },
+                { to: '/jobs',       label: 'Jobs'             },
+                { to: '/history',    label: 'Job History'      },
               ] as const
             ).map(({ to, label }) => (
               <Link

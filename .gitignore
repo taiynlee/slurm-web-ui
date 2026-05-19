@@ -2,6 +2,7 @@
 .env
 *.env
 k8s/secret.yaml
+backend/certs/
 
 # Python
 __pycache__/
