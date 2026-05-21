@@ -10,7 +10,7 @@ interface GaugeChartProps {
 export function GaugeChart({
   value,
   color = '#00d4b0',
-  bgColor = '#1e2a4a',
+  bgColor = 'var(--color-navy-700)',
   size = 160,
   minLabel,
   maxLabel,
@@ -72,7 +72,7 @@ export function GaugeChart({
         x={cx}
         y={cy + sw * 0.4}
         textAnchor="middle"
-        fill="white"
+        fill="currentColor"
         fontSize={size * 0.2}
         fontWeight="700"
         fontFamily="inherit"

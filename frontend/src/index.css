@@ -17,4 +17,34 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-height: 100vh; background-color: #0f1535; color: #fff; }
+body { margin: 0; min-height: 100vh; background-color: var(--color-navy-900); color: #fff; }
+
+/* ── Light mode ─────────────────────────────────────────────────────────── */
+html.light {
+  --color-navy-950: #d8e0f0;
+  --color-navy-900: #eef1f8;
+  --color-navy-800: #ffffff;
+  --color-navy-700: #d0d9ec;
+  --color-navy-600: #b5c2d8;
+}
+
+html.light body {
+  background-color: var(--color-navy-900);
+  color: #1e2a4a;
+}
+
+html.light .text-white {
+  color: #1e2a4a !important;
+}
+
+html.light .border-white {
+  border-color: #1e2a4a !important;
+}
+
+/* Tooltip bubble — light mode override */
+html.light .tooltip-bubble {
+  background-color: #ffffff !important;
+  border-color: #d0d9ec !important;
+  color: #3a4a6b !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+}

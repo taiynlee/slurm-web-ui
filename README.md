@@ -101,3 +101,54 @@ slurm_webui/
 │   └── package.json
 └── .env                       # Slurm credentials (gitignored)
 ```
+
+## API Reference by Page
+
+### Overview (`/`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd | `GET` | `/cluster/info` | 叢集摘要：節點數、工作數、GPU 統計、控制器健康、排程器指標 |
+| slurmrestd | `GET` | `/cluster/jobs` | 完整工作列表，用於各狀態下的工作明細展開 |
+| slurmrestd | `GET` | `/cluster/nodes` | 完整節點列表，用於各狀態下的節點名稱展開 |
+
+### Nodes (`/nodes`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd | `GET` | `/cluster/nodes` | 所有節點的狀態、CPU／GPU 配置、記憶體資訊 |
+
+### Partitions (`/partitions`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd | `GET` | `/cluster/partitions` | 所有 partition 的資源限制與設定 |
+| slurmrestd | `GET` | `/cluster/nodes` | 用於顯示各 partition 的節點成員清單 |
+
+### Jobs (`/jobs`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd | `GET` | `/cluster/jobs` | 目前佇列中所有工作的狀態、等待時間、執行時間 |
+
+### Job Detail (`/jobs/:id`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd | `GET` | `/cluster/jobs/{job_id}` | 單一工作的完整詳細資訊 |
+
+### Job History (`/history`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| slurmrestd / slurmdbd | `GET` | `/cluster/history` | 歷史工作記錄，透過 slurmdbd 查詢，支援時間範圍與節點篩選 |
+
+### GPU Utilization (`/gpu`)
+
+| 來源 | Method | Endpoint | 用途 |
+|------|--------|----------|------|
+| BCM (SQLite) | `GET` | `/cluster/gpu/summary` | 叢集 GPU 總覽：上線數、平均使用率、VRAM、總耗電 |
+| BCM (SQLite) | `GET` | `/cluster/gpu/nodes` | 各節點最新 GPU／VRAM 使用率、溫度、耗電 |
+| BCM (SQLite) | `GET` | `/cluster/gpu/history` | 指定節點的 GPU 指標時序資料（最長 7 天，伺服器端降採樣） |
+| slurmrestd | `GET` | `/cluster/gpu/jobs` | 從 Slurm GRES detail 解析各節點每張 GPU 對應的 job ID |
+| slurmrestd | `GET` | `/cluster/nodes` | 取得 CPU 核心數與記憶體配置，顯示於 Node 卡片 |
