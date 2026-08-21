@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 from app.core.config import settings
 from app.services.bcm_client import bcm_client
+from app.services.slurm_client import slurm_client
 
 _backend_dir = Path(__file__).parent.parent.parent
 DB_PATH = _backend_dir / settings.GPU_DB_PATH
@@ -59,7 +60,7 @@ def _store(rows: List[tuple]):
 
 
 async def collect_once():
-    nodes = await bcm_client.get_gpu_nodes()
+    nodes = await slurm_client.get_gpu_node_names()
     now = int(time.time())
     rows: List[tuple] = []
 

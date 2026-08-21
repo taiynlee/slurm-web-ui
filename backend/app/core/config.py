@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     BCM_KEY_PATH:        str = "certs/bcm_key.pem"
     BCM_CERT_B64:        str = ""   # base64-encoded PEM cert (overrides BCM_CERT_PATH)
     BCM_KEY_B64:         str = ""   # base64-encoded PEM key  (overrides BCM_KEY_PATH)
-    BCM_GPU_NODES:       str = "aidgxapp01,aidgxapp02"
     GPU_DB_PATH:         str = "gpu_metrics.db"
 
 

@@ -114,6 +114,23 @@ class SlurmClient:
         """Get all nodes from Slurm."""
         return await self._cached_get("nodes", f"/slurm/{settings.SLURMRESTD_VERSION}/nodes")
 
+    async def get_all_node_names(self) -> List[str]:
+        """Names of every node currently defined in this Slurm cluster, any state."""
+        result = await self.get_nodes()
+        nodes = result.get("nodes", []) if isinstance(result, dict) else []
+        return [n["name"] for n in nodes if isinstance(n, dict) and n.get("name")]
+
+    async def get_gpu_node_names(self) -> List[str]:
+        """Names of currently up nodes with GPU gres configured — the live source of
+        truth for which nodes to poll/display GPU metrics for (no static node list)."""
+        result = await self.get_nodes()
+        nodes = result.get("nodes", []) if isinstance(result, dict) else []
+        return [
+            n["name"] for n in nodes
+            if isinstance(n, dict) and n.get("name") and n.get("gres")
+            and "DOWN" not in (n.get("state") or [])
+        ]
+
     async def get_diag(self) -> Dict[str, Any]:
         """Get scheduler diagnostics from Slurm."""
         return await self._cached_get("diag", f"/slurm/{settings.SLURMRESTD_VERSION}/diag")
@@ -304,7 +321,7 @@ class SlurmClient:
 
         jobs = data.get("jobs", [])
 
-        target_nodes = set(nodes) if nodes else {"aidgxapp01", "aidgxapp02"}
+        target_nodes = set(nodes) if nodes else set(await self.get_all_node_names())
         filtered = [
             j for j in jobs
             if any(n in str(j.get("nodes", "")) for n in target_nodes)

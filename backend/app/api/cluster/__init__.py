@@ -2,7 +2,6 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from app.schemas.cluster import ClusterInfoResponse, JobDetail
 from app.services.slurm_client import slurm_client
-from app.services.bcm_client import bcm_client
 from app.services.gpu_collector import query_history, query_node_latest, query_summary
 
 router = APIRouter()
@@ -60,19 +59,19 @@ async def get_job_detail(job_id: int):
 
 @router.get('/gpu/summary')
 async def get_gpu_summary():
-    nodes = await bcm_client.get_gpu_nodes()
+    nodes = await slurm_client.get_gpu_node_names()
     return query_summary(nodes)
 
 
 @router.get('/gpu/nodes')
 async def get_gpu_nodes():
-    nodes = await bcm_client.get_gpu_nodes()
+    nodes = await slurm_client.get_gpu_node_names()
     return query_node_latest(nodes)
 
 
 @router.get('/gpu/history')
 async def get_gpu_history(
-    entity: str = Query(..., description="Node name, e.g. aidgxapp01"),
+    entity: str = Query(..., description="Node name"),
     metric: str = Query("gpu_utilization", description="Metric prefix"),
     hours:  int = Query(24, ge=1, le=168),
 ):

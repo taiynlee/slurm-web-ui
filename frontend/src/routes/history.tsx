@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { api } from '../lib/api'
 import { dur, ts } from '../lib/slurm'
 import { Tooltip } from '../components/Tooltip'
+import { useApiData } from '../hooks/useCluster'
 
 const STATE_COLOR: Record<string, string> = {
   COMPLETED:      '#68d391',
@@ -47,6 +48,12 @@ const MIN_DATE    = toDateInput(THREE_MONTHS_AGO)
 const DEFAULT_END = toDateInput(new Date())
 
 export default function History() {
+  const { data: nodesData } = useApiData<any>('/cluster/nodes')
+  const nodeNames = useMemo(() =>
+    (nodesData?.nodes ?? []).map((n: any) => n.name).filter(Boolean).sort(),
+    [nodesData]
+  )
+
   const [startDate,  setStartDate]  = useState(MIN_DATE)
   const [endDate,    setEndDate]    = useState(DEFAULT_END)
   const [nodeFilter, setNodeFilter] = useState('ALL')
@@ -138,7 +145,7 @@ export default function History() {
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <Tooltip tip="Historical jobs that ran on aidgxapp01 and aidgxapp02, sourced from slurmdbd\n從 slurmdbd 取得在 aidgxapp01 與 aidgxapp02 上執行過的歷史工作">
+        <Tooltip tip="Historical jobs that ran on this cluster's nodes, sourced from slurmdbd\n從 slurmdbd 取得此叢集節點上執行過的歷史工作">
           <h1 className="text-2xl font-bold text-white cursor-help">Job History（歷史工作）</h1>
         </Tooltip>
         <p className="text-sm text-[#8892b0] mt-0.5">
@@ -181,8 +188,9 @@ export default function History() {
                 className="bg-navy-900 border border-navy-700 rounded-xl px-3 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 cursor-pointer"
               >
                 <option value="ALL">All Nodes</option>
-                <option value="aidgxapp01">aidgxapp01</option>
-                <option value="aidgxapp02">aidgxapp02</option>
+                {nodeNames.map((name: string) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
               </select>
             </div>
             <div className="flex flex-col gap-1">

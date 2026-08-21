@@ -51,9 +51,6 @@ class BcmClient:
         data = await self._get('/rest/v1/monitoring/latest/', params)
         return data.get('data', []) if isinstance(data, dict) else []
 
-    async def get_gpu_nodes(self) -> List[str]:
-        return [n.strip() for n in settings.BCM_GPU_NODES.split(',') if n.strip()]
-
     async def get_summary(self) -> Dict:
         data = await self.get_latest(entity='base')
         m = {d['measurable']: d['raw'] for d in data}
