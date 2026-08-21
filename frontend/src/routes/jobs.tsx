@@ -173,8 +173,8 @@ export default function Jobs() {
                       {job.partition ?? '—'}
                     </span>
                   </Tooltip>
-                  <Tooltip tip="Username of the account that submitted this job\n提交此工作的使用者帳號">
-                    <span className="text-xs text-[#8892b0] cursor-help">{job.user_name ?? job.user ?? '—'}</span>
+                  <Tooltip tip="Username / Slurm account charged for this job's resource usage ('none' if not specified at submission)\n使用者 / 此工作計費的 Slurm 帳號（提交時未指定則顯示 none）">
+                    <span className="text-xs text-[#8892b0] cursor-help">{job.user_name ?? job.user ?? '—'}/{job.account || 'none'}</span>
                   </Tooltip>
                 </div>
 
