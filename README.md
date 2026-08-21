@@ -8,6 +8,9 @@ A modern web interface for monitoring Slurm HPC clusters. No login required — 
 - **Nodes** — per-node state, CPU/GPU allocation, memory, features
 - **Partitions** — resource limits, node membership
 - **Jobs** — queue view with wait time, runtime, remaining time; clickable job detail page
+- **Job History** — slurmdbd-backed job history with time range and node filtering (up to 1 month)
+- **GPU Utilization** — live per-node GPU/VRAM usage, temperature and power via BCM, with 7-day history charts
+- **Light/Dark theme toggle**
 - **1-minute auto-refresh** with no page flash (stale-while-revalidate)
 
 ## Tech Stack
@@ -71,15 +74,25 @@ SLURM_HOST=http://<host>:6820
 SLURM_USER_NAME=<slurm-account>
 SLURM_USER_TOKEN=<slurm-jwt-token>
 SLURMRESTD_VERSION=v0.0.42
+
+# GPU monitoring (BCM) — optional, only needed for the GPU Utilization page
+BCM_HOST=https://<bcm-host>:8081
+BCM_CERT_PATH=certs/bcm_cert.pem      # or BCM_CERT_B64 (base64-encoded PEM)
+BCM_KEY_PATH=certs/bcm_key.pem        # or BCM_KEY_B64  (base64-encoded PEM)
+GPU_DB_PATH=gpu_metrics.db
 ```
+
+GPU-capable nodes are discovered live from Slurm (`gres` contains `gpu` and node state isn't `DOWN`) — there is no separate node list to configure or keep in sync.
 
 ## Architecture
 
 ```
 Browser → React SPA (Vite) → FastAPI proxy → slurmrestd
+                                    ↓
+                              BCM (GPU metrics, polled every 60s into SQLite)
 ```
 
-The FastAPI backend proxies all Slurm REST API requests with a **60-second TTL cache** to avoid hammering slurmrestd. The Slurm token never reaches the browser.
+The FastAPI backend proxies all Slurm REST API requests with a **60-second TTL cache** to avoid hammering slurmrestd. The Slurm token never reaches the browser. GPU metrics are polled from BCM in the background and stored locally (SQLite) so the GPU Utilization page can serve history without re-querying BCM per request.
 
 ## Project Layout
 
@@ -87,14 +100,14 @@ The FastAPI backend proxies all Slurm REST API requests with a **60-second TTL c
 slurm_webui/
 ├── backend/
 │   ├── app/
-│   │   ├── api/cluster/       # GET /cluster/{info,nodes,partitions,jobs,stats}
+│   │   ├── api/cluster/       # GET /cluster/{info,nodes,partitions,jobs,stats,history,gpu/*}
 │   │   ├── core/config.py     # pydantic-settings
 │   │   ├── schemas/           # Pydantic response models
-│   │   └── services/          # slurm_client.py + slurm_cache.py
+│   │   └── services/          # slurm_client.py, slurm_cache.py, bcm_client.py, gpu_collector.py
 │   └── pyproject.toml
 ├── frontend/
 │   ├── src/
-│   │   ├── routes/            # TanStack Router pages
+│   │   ├── routes/            # TanStack Router pages (cluster-overview, nodes, partitions, jobs, history, gpu)
 │   │   ├── components/        # GaugeChart, Tooltip, ErrorBoundary
 │   │   ├── hooks/useCluster.ts
 │   │   └── lib/               # api.ts, slurm.ts
