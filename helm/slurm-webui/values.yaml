@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: harbor.wistron.com/k8sprdwhqaiml/slurm/slurm-webui
+  repository: harbor.your-company.com/k8sprdwhqaiml/slurm/slurm-webui
   tag: v1.8.0
   pullPolicy: IfNotPresent
 
@@ -11,7 +11,7 @@ service:
   targetPort: 8000
 
 ingress:
-  host: slurm-job-ui.infer-whq.k8s.wistron.com
+  host: slurm-job-ui.infer-whq.k8s.your-company.com
 
 resources:
   requests:

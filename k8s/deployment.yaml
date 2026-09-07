@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: slurm-webui
-          image: harbor.wistron.com/k8sprdwhqaiml/slurm/slurm-webui:latest
+          image: harbor.your-company.com/k8sprdwhqaiml/slurm/slurm-webui:latest
           ports:
             - containerPort: 8000
           envFrom:
