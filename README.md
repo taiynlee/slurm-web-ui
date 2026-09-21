@@ -65,6 +65,16 @@ npm run dev
 
 Open **http://localhost:5173**
 
+### 一鍵啟動（背景／隱藏視窗模式）
+
+```powershell
+.\start.bat   # 啟動 backend (8020) + frontend (5174)，隱藏視窗
+.\stop.bat    # 停止（只會停止屬於本專案的程序）
+```
+
+- `start.bat` 啟動前會先偵測 port 是否已被占用，占用就跳過，避免重複啟動
+- 輸出寫到 `logs/backend.log`、`logs/frontend.log`；PID 記錄在 `.backend.pid`、`.frontend.pid`（皆已 gitignored）
+
 ## Configuration
 
 `backend/.env`:

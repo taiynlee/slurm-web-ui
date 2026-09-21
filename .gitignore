@@ -22,4 +22,6 @@ dist/
 
 # Misc
 *.log
+*.pid
+/logs/
 .DS_Store
